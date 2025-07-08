@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>My First LIFF App</title>
+  <script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
+</head>
+<body>
+  <h1>LIFF Demo</h1>
+  <p id="name">กำลังโหลด...</p>
+  <img id="picture" src="" style="max-width: 100px;" />
+  
+  <script>
+    async function main() {
+      await liff.init({ liffId: "2007712584-v1WRnB24" }); // <== ใส่ LIFF ID ที่คุณได้จาก LINE
+      if (!liff.isLoggedIn()) {
+        liff.login();
+      } else {
+        const profile = await liff.getProfile();
+        document.getElementById("name").textContent = "สวัสดีคุณ " + profile.displayName;
+        document.getElementById("picture").src = profile.pictureUrl;
+      }
+    }
+
+    main();
+  </script>
+</body>
+</html>
