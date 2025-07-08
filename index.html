@@ -1,66 +1,603 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>สะสมแต้ม</title>
-    <script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบสะสมแต้ม</title>
+    <script src="https://static.line-scdn.net/liff/edge/versions/2.22.3/liff.js"></script>
     <style>
-      body {
-        font-family: sans-serif;
-        text-align: center;
-        padding: 40px;
-      }
-      button {
-        padding: 15px 30px;
-        font-size: 18px;
-        background-color: #06C755;
-        color: white;
-        border: none;
-        border-radius: 10px;
-      }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(45deg, #00B900, #00D924);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 3s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            z-index: 1;
+            position: relative;
+        }
+        
+        .user-info {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .user-card {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: white;
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .user-details h3 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .user-id {
+            color: #666;
+            font-size: 12px;
+        }
+        
+        .points-section {
+            padding: 30px 20px;
+            text-align: center;
+        }
+        
+        .current-points {
+            background: linear-gradient(135deg, #ffeaa7, #fdcb6e);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(253, 203, 110, 0.3);
+        }
+        
+        .points-label {
+            color: #333;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .points-value {
+            font-size: 36px;
+            font-weight: bold;
+            color: #e17055;
+            margin-bottom: 5px;
+        }
+        
+        .points-unit {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .btn {
+            padding: 15px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-add {
+            background: linear-gradient(45deg, #00b894, #00a085);
+            color: white;
+        }
+        
+        .btn-redeem {
+            background: linear-gradient(45deg, #e84393, #d63031);
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #00B900;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .history-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .history-title {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .history-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .history-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .history-details {
+            flex: 1;
+        }
+        
+        .history-type {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .history-type.add {
+            color: #00b894;
+        }
+        
+        .history-type.redeem {
+            color: #e84393;
+        }
+        
+        .history-date {
+            color: #666;
+            font-size: 12px;
+        }
+        
+        .history-points {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .history-points.add {
+            color: #00b894;
+        }
+        
+        .history-points.redeem {
+            color: #e84393;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        
+        .loading::after {
+            content: "...";
+            animation: dots 1.5s steps(5, end) infinite;
+        }
+        
+        @keyframes dots {
+            0%, 20% { color: rgba(0,0,0,0); text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0); }
+            40% { color: #666; text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0); }
+            60% { text-shadow: .25em 0 0 #666, .5em 0 0 rgba(0,0,0,0); }
+            80%, 100% { text-shadow: .25em 0 0 #666, .5em 0 0 #666; }
+        }
     </style>
-  </head>
-  <body>
-    <h1>ระบบสะสมแต้ม</h1>
-    <p id="welcome"></p>
-    <button onclick="collectPoints()">สะสมแต้ม</button>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 ระบบสะสมแต้ม</h1>
+            <p>สะสมแต้มและแลกของรางวัล</p>
+        </div>
+        
+        <div class="user-info">
+            <div class="user-card">
+                <div class="user-avatar" id="userAvatar">👤</div>
+                <div class="user-details">
+                    <h3 id="userName">กำลังโหลด...</h3>
+                    <div class="user-id" id="userId">Loading...</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="points-section">
+            <div class="current-points">
+                <div class="points-label">แต้มสะสมปัจจุบัน</div>
+                <div class="points-value" id="currentPoints">0</div>
+                <div class="points-unit">แต้ม</div>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-add" onclick="showAddPoints()">
+                    ➕ เพิ่มแต้ม
+                </button>
+                <button class="btn btn-redeem" onclick="showRedeemPoints()">
+                    🎁 ใช้แต้ม
+                </button>
+            </div>
+            
+            <div id="addPointsForm" class="hidden">
+                <div class="input-group">
+                    <label for="addAmount">จำนวนแต้มที่ต้องการเพิ่ม:</label>
+                    <input type="number" id="addAmount" min="1" placeholder="กรอกจำนวนแต้ม">
+                </div>
+                <div class="input-group">
+                    <label for="addReason">เหตุผล:</label>
+                    <input type="text" id="addReason" placeholder="เช่น การซื้อสินค้า, กิจกรรมพิเศษ">
+                </div>
+                <button class="btn btn-add" onclick="addPoints()">✅ ยืนยันการเพิ่มแต้ม</button>
+                <button class="btn" onclick="hideAddPoints()" style="background: #ddd; color: #666;">❌ ยกเลิก</button>
+            </div>
+            
+            <div id="redeemPointsForm" class="hidden">
+                <div class="input-group">
+                    <label for="redeemAmount">จำนวนแต้มที่ต้องการใช้:</label>
+                    <input type="number" id="redeemAmount" min="1" placeholder="กรอกจำนวนแต้ม">
+                </div>
+                <div class="input-group">
+                    <label for="redeemReason">รายการแลก:</label>
+                    <input type="text" id="redeemReason" placeholder="เช่น ส่วนลด 10%, สินค้าฟรี">
+                </div>
+                <button class="btn btn-redeem" onclick="redeemPoints()">✅ ยืนยันการใช้แต้ม</button>
+                <button class="btn" onclick="hideRedeemPoints()" style="background: #ddd; color: #666;">❌ ยกเลิก</button>
+            </div>
+        </div>
+        
+        <div class="history-section">
+            <h3 class="history-title">📋 ประวัติการใช้แต้ม</h3>
+            <div id="historyList">
+                <div class="loading">กำลังโหลดประวัติ</div>
+            </div>
+        </div>
+    </div>
 
     <script>
-      const liffId = "2007712584-v1WRnB24"; // <-- ใช้ LIFF ID ของคุณ
-      const sheetUrl = "https://script.google.com/macros/s/AKfycbyN4A_iyfHIWJybI717mYzTZmWUQRz3efYw_pA0JURReJLfCXerql8KBbJAI4RkmqXA/exec";
-
-      async function main() {
-        await liff.init({ liffId });
-        if (!liff.isLoggedIn()) {
-          liff.login();
-        } else {
-          const profile = await liff.getProfile();
-          document.getElementById("welcome").textContent = `สวัสดีคุณ ${profile.displayName}`;
-          window.userProfile = profile; // เก็บไว้ใช้ใน collectPoints
+        // Configuration
+        const LIFF_ID = '2007712584-v1WRnB24'; // ใส่ LIFF ID ของคุณ
+        const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw2lxT5wOjrfFce7QkftQLVhiYfhwE49pXhunpuCAwW3NZbBo8bd_7AVZilVhTk21_lPA/exec'; // ใส่ URL ของ Google Apps Script
+        
+        let userProfile = null;
+        let currentPoints = 0;
+        
+        // Initialize LIFF
+        async function initializeLiff() {
+            try {
+                await liff.init({ liffId: LIFF_ID });
+                
+                if (liff.isLoggedIn()) {
+                    await getUserProfile();
+                    await loadUserPoints();
+                    await loadHistory();
+                } else {
+                    liff.login();
+                }
+            } catch (error) {
+                console.error('LIFF initialization failed:', error);
+                // For testing without LIFF
+                loadDemoData();
+            }
         }
-      }
-
-      async function collectPoints() {
-        const profile = window.userProfile;
-        if (!profile) return alert("ยังไม่ได้รับข้อมูลผู้ใช้");
-
-        const res = await fetch(sheetUrl, {
-          method: "POST",
-          body: JSON.stringify({
-            userId: profile.userId,
-            displayName: profile.displayName,
-            timestamp: new Date().toISOString()
-          }),
-          headers: {
-            "Content-Type": "application/json"
-          }
-        });
-
-        const text = await res.text();
-        alert("ผลลัพธ์จากระบบ: " + text);
-      }
-
-      main();
+        
+        // Get user profile from LINE
+        async function getUserProfile() {
+            try {
+                userProfile = await liff.getProfile();
+                document.getElementById('userName').textContent = userProfile.displayName;
+                document.getElementById('userId').textContent = userProfile.userId;
+                
+                // Show user avatar
+                if (userProfile.pictureUrl) {
+                    document.getElementById('userAvatar').innerHTML = `<img src="${userProfile.pictureUrl}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+                } else {
+                    document.getElementById('userAvatar').textContent = userProfile.displayName.charAt(0);
+                }
+            } catch (error) {
+                console.error('Error getting user profile:', error);
+            }
+        }
+        
+        // Load user points from Google Sheets
+        async function loadUserPoints() {
+            try {
+                const response = await fetch(`${GOOGLE_APPS_SCRIPT_URL}?action=getPoints&userId=${userProfile.userId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentPoints = data.points || 0;
+                    document.getElementById('currentPoints').textContent = currentPoints;
+                }
+            } catch (error) {
+                console.error('Error loading points:', error);
+            }
+        }
+        
+        // Load transaction history
+        async function loadHistory() {
+            try {
+                const response = await fetch(`${GOOGLE_APPS_SCRIPT_URL}?action=getHistory&userId=${userProfile.userId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayHistory(data.history || []);
+                }
+            } catch (error) {
+                console.error('Error loading history:', error);
+                document.getElementById('historyList').innerHTML = '<div style="text-align: center; color: #666;">ไม่สามารถโหลดประวัติได้</div>';
+            }
+        }
+        
+        // Display history
+        function displayHistory(history) {
+            const historyList = document.getElementById('historyList');
+            
+            if (history.length === 0) {
+                historyList.innerHTML = '<div style="text-align: center; color: #666;">ยังไม่มีประวัติการใช้แต้ม</div>';
+                return;
+            }
+            
+            historyList.innerHTML = history.map(item => `
+                <div class="history-item">
+                    <div class="history-details">
+                        <div class="history-type ${item.type}">${item.type === 'add' ? '➕ เพิ่มแต้ม' : '🎁 ใช้แต้ม'}</div>
+                        <div class="history-date">${formatDate(item.date)}</div>
+                        <div style="margin-top: 5px; color: #666;">${item.reason}</div>
+                    </div>
+                    <div class="history-points ${item.type}">
+                        ${item.type === 'add' ? '+' : '-'}${item.points}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Format date
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('th-TH', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+        
+        // Show add points form
+        function showAddPoints() {
+            document.getElementById('addPointsForm').classList.remove('hidden');
+            document.getElementById('redeemPointsForm').classList.add('hidden');
+        }
+        
+        // Hide add points form
+        function hideAddPoints() {
+            document.getElementById('addPointsForm').classList.add('hidden');
+            document.getElementById('addAmount').value = '';
+            document.getElementById('addReason').value = '';
+        }
+        
+        // Show redeem points form
+        function showRedeemPoints() {
+            document.getElementById('redeemPointsForm').classList.remove('hidden');
+            document.getElementById('addPointsForm').classList.add('hidden');
+        }
+        
+        // Hide redeem points form
+        function hideRedeemPoints() {
+            document.getElementById('redeemPointsForm').classList.add('hidden');
+            document.getElementById('redeemAmount').value = '';
+            document.getElementById('redeemReason').value = '';
+        }
+        
+        // Add points
+        async function addPoints() {
+            const amount = parseInt(document.getElementById('addAmount').value);
+            const reason = document.getElementById('addReason').value;
+            
+            if (!amount || amount <= 0) {
+                alert('กรุณากรอกจำนวนแต้มที่ถูกต้อง');
+                return;
+            }
+            
+            if (!reason.trim()) {
+                alert('กรุณากรอกเหตุผล');
+                return;
+            }
+            
+            try {
+                const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'addPoints',
+                        userId: userProfile.userId,
+                        userName: userProfile.displayName,
+                        amount: amount,
+                        reason: reason
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('เพิ่มแต้มเรียบร้อยแล้ว! 🎉');
+                    await loadUserPoints();
+                    await loadHistory();
+                    hideAddPoints();
+                } else {
+                    alert('เกิดข้อผิดพลาด: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error adding points:', error);
+                alert('เกิดข้อผิดพลาดในการเพิ่มแต้ม');
+            }
+        }
+        
+        // Redeem points
+        async function redeemPoints() {
+            const amount = parseInt(document.getElementById('redeemAmount').value);
+            const reason = document.getElementById('redeemReason').value;
+            
+            if (!amount || amount <= 0) {
+                alert('กรุณากรอกจำนวนแต้มที่ถูกต้อง');
+                return;
+            }
+            
+            if (!reason.trim()) {
+                alert('กรุณากรอกรายการแลก');
+                return;
+            }
+            
+            if (amount > currentPoints) {
+                alert('แต้มไม่เพียงพอ! คุณมีแต้ม ' + currentPoints + ' แต้ม');
+                return;
+            }
+            
+            try {
+                const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'redeemPoints',
+                        userId: userProfile.userId,
+                        userName: userProfile.displayName,
+                        amount: amount,
+                        reason: reason
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('ใช้แต้มเรียบร้อยแล้ว! 🎁');
+                    await loadUserPoints();
+                    await loadHistory();
+                    hideRedeemPoints();
+                } else {
+                    alert('เกิดข้อผิดพลาด: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error redeeming points:', error);
+                alert('เกิดข้อผิดพลาดในการใช้แต้ม');
+            }
+        }
+        
+        // Demo data for testing
+        function loadDemoData() {
+            document.getElementById('userName').textContent = 'ผู้ใช้ทดสอบ';
+            document.getElementById('userId').textContent = 'demo-user-123';
+            document.getElementById('currentPoints').textContent = '150';
+            currentPoints = 150;
+            
+            const demoHistory = [
+                { type: 'add', points: 50, reason: 'ซื้อสินค้า 500 บาท', date: '2024-01-15T10:30:00' },
+                { type: 'add', points: 100, reason: 'กิจกรรมพิเศษ', date: '2024-01-14T14:15:00' },
+                { type: 'redeem', points: 30, reason: 'ส่วนลด 10%', date: '2024-01-13T16:45:00' }
+            ];
+            
+            displayHistory(demoHistory);
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initializeLiff);
     </script>
-  </body>
+</body>
 </html>
