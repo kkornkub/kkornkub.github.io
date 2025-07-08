@@ -1,78 +1,66 @@
 <!DOCTYPE html>
-<html lang="th">
-<head>
-  <meta charset="UTF-8">
-  <title>สะสมแต้มสมาชิก</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
-  <style>
-    body {
-      font-family: sans-serif;
-      text-align: center;
-      padding: 40px;
-      background: #e0f7fa;
-    }
-    img {
-      border-radius: 50%;
-      width: 100px;
-      margin: 20px 0;
-    }
-    .btn {
-      background: #00796b;
-      color: white;
-      padding: 12px 20px;
-      border: none;
-      border-radius: 30px;
-      font-size: 16px;
-      margin-top: 20px;
-      cursor: pointer;
-    }
-  </style>
-</head>
-<body>
-  <h2>ระบบสะสมแต้มผ่าน LINE</h2>
-  <img id="profile-pic" src="" alt="Profile">
-  <h3 id="display-name">กำลังโหลด...</h3>
-  <button class="btn" onclick="collectPoint()">สะสมแต้ม</button>
-
-  <script>
-    const sheetUrl = "https://script.google.com/macros/s/AKfycbyN4A_iyfHIWJybI717mYzTZmWUQRz3efYw_pA0JURReJLfCXerql8KBbJAI4RkmqXA/exec"; // 🔁 เปลี่ยนเป็น URL ของคุณ
-
-    async function main() {
-      await liff.init({ liffId: "2007712584-v1WRnB24" }); // 🔁 ใส่ LIFF ID ของคุณ
-
-      if (!liff.isLoggedIn()) {
-        liff.login();
-      } else {
-        const profile = await liff.getProfile();
-        document.getElementById("display-name").textContent = profile.displayName;
-        document.getElementById("profile-pic").src = profile.pictureUrl;
-
-        // Store user info for later
-        window.userData = {
-          userId: profile.userId,
-          displayName: profile.displayName
-        };
+<html>
+  <head>
+    <title>สะสมแต้ม</title>
+    <script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+      body {
+        font-family: sans-serif;
+        text-align: center;
+        padding: 40px;
       }
-    }
-
-    async function collectPoint() {
-      const data = window.userData;
-
-      const res = await fetch(sheetUrl, {
-        method: "POST",
-        body: JSON.stringify(data),
-        headers: { "Content-Type": "application/json" }
-      });
-
-      if (res.ok) {
-        alert("🎉 คุณได้รับ 1 แต้มแล้ว!");
-      } else {
-        alert("เกิดข้อผิดพลาด กรุณาลองใหม่");
+      button {
+        padding: 15px 30px;
+        font-size: 18px;
+        background-color: #06C755;
+        color: white;
+        border: none;
+        border-radius: 10px;
       }
-    }
+    </style>
+  </head>
+  <body>
+    <h1>ระบบสะสมแต้ม</h1>
+    <p id="welcome"></p>
+    <button onclick="collectPoints()">สะสมแต้ม</button>
 
-    main();
-  </script>
-</body>
+    <script>
+      const liffId = "2007712584-v1WRnB24"; // <-- ใช้ LIFF ID ของคุณ
+      const sheetUrl = "https://script.google.com/macros/s/AKfycbyN4A_iyfHIWJybI717mYzTZmWUQRz3efYw_pA0JURReJLfCXerql8KBbJAI4RkmqXA/exec";
+
+      async function main() {
+        await liff.init({ liffId });
+        if (!liff.isLoggedIn()) {
+          liff.login();
+        } else {
+          const profile = await liff.getProfile();
+          document.getElementById("welcome").textContent = `สวัสดีคุณ ${profile.displayName}`;
+          window.userProfile = profile; // เก็บไว้ใช้ใน collectPoints
+        }
+      }
+
+      async function collectPoints() {
+        const profile = window.userProfile;
+        if (!profile) return alert("ยังไม่ได้รับข้อมูลผู้ใช้");
+
+        const res = await fetch(sheetUrl, {
+          method: "POST",
+          body: JSON.stringify({
+            userId: profile.userId,
+            displayName: profile.displayName,
+            timestamp: new Date().toISOString()
+          }),
+          headers: {
+            "Content-Type": "application/json"
+          }
+        });
+
+        const text = await res.text();
+        alert("ผลลัพธ์จากระบบ: " + text);
+      }
+
+      main();
+    </script>
+  </body>
 </html>
